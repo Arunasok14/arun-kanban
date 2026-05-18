@@ -170,7 +170,7 @@ async def init_db() -> None:
     os.makedirs(os.path.dirname(os.path.abspath(_db_path)), exist_ok=True)
     async with aiosqlite.connect(_db_path) as db:
         # Load sqlite-vec extension (Sprint 5 vector search)
-        vec_ok = _load_sqlite_vec(db._db)  # access underlying sqlite3.Connection
+        vec_ok = _load_sqlite_vec(db._connection)  # access underlying sqlite3.Connection
         await db.executescript(DDL)
         await _migrate(db)
 
@@ -200,5 +200,5 @@ async def get_db():
     async with aiosqlite.connect(_db_path) as db:
         db.row_factory = aiosqlite.Row
         await db.execute("PRAGMA foreign_keys = ON")
-        _load_sqlite_vec(db._db)  # load extension on every connection (no-op if unavailable)
+        _load_sqlite_vec(db._connection)  # load extension on every connection (no-op if unavailable)
         yield db
