@@ -221,6 +221,7 @@ async def run_execution(
     impl_execution_id: Optional[str] = None,
     use_docker: bool = False,
     prior_work: Optional[list] = None,
+    task_status: str = "",
 ) -> None:
     """
     Main execution coroutine. Runs in the background.
@@ -265,10 +266,16 @@ async def run_execution(
                 return
 
             # Step 2: Inject context
-            if skip_context_inject:
-                prompt = prompt_override or f"# Task: {task_title}\n\n{task_description}"
+            if prompt_override:
+                prompt = prompt_override
+            elif task_status == "plan":
+                # Plan stage: ask Claude to produce a plan without executing
+                desc = task_description.strip() if task_description else ""
+                prompt = f"/plan\n\n# Task: {task_title}\n\n{desc}" if desc else f"/plan\n\n# Task: {task_title}"
+            elif skip_context_inject:
+                prompt = f"# Task: {task_title}\n\n{task_description}"
             else:
-                prompt = prompt_override or context_injector.inject(
+                prompt = context_injector.inject(
                     worktree_path=worktree_path,
                     task_id=task_id,
                     title=task_title,

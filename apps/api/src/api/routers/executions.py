@@ -69,6 +69,7 @@ async def start_execution(task_id: str, data: ExecutionCreate):
         "skip_permissions": require_approval.lower() != "true",
         "use_docker": docker_sandbox.lower() == "true",
         "prior_work": prior_work,
+        "task_status": task.status,
     }
     try:
         await task_queue.enqueue(payload)

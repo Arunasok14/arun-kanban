@@ -71,6 +71,7 @@ class RunRequest(BaseModel):
     impl_execution_id: Optional[str] = None # Set on validation runs for WS routing
     use_docker: bool = False                 # Run agent inside Docker sandbox
     prior_work: list = []                    # Sprint 5: similar prior context records
+    task_status: str = ""                    # e.g. "plan", "in_progress", "testing"
 
 
 class ApprovalSignal(BaseModel):
@@ -103,6 +104,7 @@ async def run(req: RunRequest):
             impl_execution_id=req.impl_execution_id,
             use_docker=req.use_docker,
             prior_work=req.prior_work,
+            task_status=req.task_status,
         )
     )
     return {"execution_id": req.execution_id, "status": "started"}
