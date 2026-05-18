@@ -51,6 +51,7 @@ async def execution_stream(websocket: WebSocket, execution_id: str):
             "status": execution.status,
             "exit_code": execution.exit_code,
             "token_usage": execution.token_usage,
+            "error_message": execution.error_message,
         })
         try:
             await websocket.close()
@@ -77,6 +78,7 @@ async def execution_stream(websocket: WebSocket, execution_id: str):
                     "status": execution.status if execution else "unknown",
                     "exit_code": execution.exit_code if execution else None,
                     "token_usage": execution.token_usage if execution else None,
+                    "error_message": execution.error_message if execution else None,
                 })
                 break
 

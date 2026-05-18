@@ -145,7 +145,10 @@ export function useExecutionStream(executionId: string | null) {
     return () => {
       if (reconnectTimer.current) clearTimeout(reconnectTimer.current);
       if (wsRef.current) {
+        wsRef.current.onopen = null;
         wsRef.current.onclose = null;
+        wsRef.current.onerror = null;
+        wsRef.current.onmessage = null;
         wsRef.current.close();
       }
     };

@@ -257,6 +257,7 @@ async def _record_context(task_id: str, execution_id: str, status: str) -> None:
 @internal_router.post("/executions/{execution_id}/status")
 async def internal_status(execution_id: str, update: InternalStatusUpdate):
     from ..bus import event_bus
+    from ..schemas import utcnow
     async with get_db() as db:
         execution = await execution_service.get(db, execution_id)
         if not execution:
@@ -271,6 +272,24 @@ async def internal_status(execution_id: str, update: InternalStatusUpdate):
         "token_output": execution.token_output,
         "cost_usd": execution.cost_usd,
     })
+
+    # Surface error_message as a visible log event so UI shows why it failed
+    if execution.status == "failed" and execution.error_message:
+        async with get_db() as db:
+            from ..schemas import InternalEventCreate
+            await execution_service.apply_event(db, execution_id, InternalEventCreate(
+                sequence=999990,
+                level="stderr",
+                content=f"[error] {execution.error_message}",
+                timestamp=utcnow(),
+            ))
+        await event_bus.publish(execution_id, {
+            "type": "log",
+            "sequence": 999990,
+            "level": "stderr",
+            "content": f"[error] {execution.error_message}",
+            "timestamp": utcnow(),
+        })
 
     if execution.status in ("completed", "failed", "stopped"):
         await event_bus.publish_done(execution_id)
