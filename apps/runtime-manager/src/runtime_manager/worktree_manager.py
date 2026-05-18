@@ -42,12 +42,16 @@ class WorktreeManager:
         dest = self.worktree_path(project_name, task_id)
         dest.parent.mkdir(parents=True, exist_ok=True)
 
+        # If worktree directory already exists (from a prior run), reuse it
+        if dest.exists():
+            return str(dest), branch
+
         rc, _, err = await self._run_git(
             ["worktree", "add", "-b", branch, str(dest), base_branch],
             cwd=repo_path,
         )
         if rc != 0:
-            # Branch may already exist if re-running — try without -b
+            # Branch already exists but directory doesn't — check out without -b
             rc2, _, err2 = await self._run_git(
                 ["worktree", "add", str(dest), branch],
                 cwd=repo_path,
