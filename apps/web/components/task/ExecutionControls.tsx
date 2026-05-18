@@ -27,9 +27,16 @@ export function ExecutionControls({ task, onExecutionStarted }: ExecutionControl
 
   useEffect(() => {
     api.settings.get()
-      .then((s) => setDefaultModel(s.default_model))
+      .then((s) => {
+        const stageMap: Record<string, string> = {
+          plan:        s.stage_model_plan ?? s.default_model,
+          in_progress: s.stage_model_in_progress ?? s.default_model,
+          testing:     s.stage_model_testing ?? s.default_model,
+        };
+        setDefaultModel(stageMap[task.status] ?? s.default_model);
+      })
       .catch(() => {/* non-critical */});
-  }, []);
+  }, [task.status]);
 
   const execStatus = task.latest_execution?.status;
   const isRunning = execStatus === "running" || execStatus === "pending";

@@ -38,8 +38,15 @@ async def start_execution(task_id: str, data: ExecutionCreate):
         query = f"{task.title} {task.description or ''}"
         prior_work = await embedding_service.retrieve_similar(db, query, k=5, api_key=openai_api_key)
 
-    # Resolve model and budget (per-execution override > global default)
-    model = data.model_override or default_model
+    # Resolve model: per-execution override > stage default > global default
+    _stage_model_key = {
+        "plan":        "stage_model_plan",
+        "in_progress": "stage_model_in_progress",
+        "testing":     "stage_model_testing",
+    }.get(task.status)
+    async with get_db() as db:
+        stage_default = await settings_service.get_value(db, _stage_model_key, default_model) if _stage_model_key else default_model
+    model = data.model_override or stage_default
     budget = data.budget_override or float(default_budget)
 
     # Enqueue for runtime-manager to pick up
