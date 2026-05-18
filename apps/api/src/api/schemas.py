@@ -25,6 +25,7 @@ class ProjectCreate(BaseModel):
 class ProjectUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
+    repo_path: Optional[str] = None
     default_branch: Optional[str] = None
 
 

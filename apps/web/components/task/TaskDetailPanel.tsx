@@ -37,6 +37,15 @@ export function TaskDetailPanel({ task, onClose }: TaskDetailPanelProps) {
     setActiveExecutionId(execution.id);
   }
 
+  // Sync terminal WS status back to the board store so card reflects reality
+  useEffect(() => {
+    if (execStatus && task.latest_execution) {
+      updateTask(task.id, {
+        latest_execution: { ...task.latest_execution, status: execStatus },
+      });
+    }
+  }, [execStatus]); // eslint-disable-line react-hooks/exhaustive-deps
+
   async function handleApprovePlan() {
     setApprovingPlan(true);
     try {
@@ -164,7 +173,7 @@ export function TaskDetailPanel({ task, onClose }: TaskDetailPanelProps) {
         {/* Execution controls */}
         <div>
           <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Agent Control</h3>
-          <ExecutionControls task={task} onExecutionStarted={handleExecutionStarted} />
+          <ExecutionControls task={task} wsExecStatus={execStatus} onExecutionStarted={handleExecutionStarted} />
         </div>
 
         {/* Token budget */}

@@ -15,10 +15,11 @@ const CLAUDE_MODELS = [
 
 interface ExecutionControlsProps {
   task: Task;
+  wsExecStatus?: string | null;  // live status from WS stream (takes priority over store)
   onExecutionStarted: (execution: Execution) => void;
 }
 
-export function ExecutionControls({ task, onExecutionStarted }: ExecutionControlsProps) {
+export function ExecutionControls({ task, wsExecStatus, onExecutionStarted }: ExecutionControlsProps) {
   const updateTask = useBoardStore((s) => s.updateTask);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,7 +39,8 @@ export function ExecutionControls({ task, onExecutionStarted }: ExecutionControl
       .catch(() => {/* non-critical */});
   }, [task.status]);
 
-  const execStatus = task.latest_execution?.status;
+  // Use live WS status if available, fall back to store value
+  const execStatus = wsExecStatus ?? task.latest_execution?.status;
   const isRunning = execStatus === "running" || execStatus === "pending";
 
   async function handleStart() {

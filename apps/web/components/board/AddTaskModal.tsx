@@ -44,7 +44,7 @@ export function AddTaskModal({ projectId, onClose }: AddTaskModalProps) {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="What needs to be done?"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
           <div>
@@ -54,7 +54,7 @@ export function AddTaskModal({ projectId, onClose }: AddTaskModalProps) {
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
               placeholder="Optional details for the AI agent..."
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
             />
           </div>
           {error && <p className="text-sm text-red-600">{error}</p>}

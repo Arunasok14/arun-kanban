@@ -32,6 +32,7 @@ export function useExecutionStream(executionId: string | null) {
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const seqRef = useRef<number>(0);
+  const doneRef = useRef<boolean>(false); // set when server sends "done" frame
 
   const connect = useCallback(() => {
     if (!executionId) return;
@@ -102,6 +103,7 @@ export function useExecutionStream(executionId: string | null) {
             previewUrl: frame.preview_url ?? null,
           });
         } else if (frame.type === "done") {
+          doneRef.current = true;
           setExecStatus(frame.status ?? null);
           setConnStatus("closed");
           setPendingApproval(null);
@@ -115,8 +117,8 @@ export function useExecutionStream(executionId: string | null) {
     ws.onerror = () => setConnStatus("error");
 
     ws.onclose = (e) => {
-      // Don't reconnect if cleanly closed (normal done frame received)
-      if (connStatus === "closed") return;
+      // Don't reconnect if cleanly closed (server sent "done" frame)
+      if (doneRef.current) return;
       setConnStatus("error");
       // Exponential backoff reconnect (max 10s)
       const delay = Math.min(1000 * (reconnectTimer.current ? 2 : 1), 10000);
@@ -137,6 +139,7 @@ export function useExecutionStream(executionId: string | null) {
     }
     setLogs([]);
     seqRef.current = 0;
+    doneRef.current = false;
     connect();
 
     return () => {

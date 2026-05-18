@@ -61,8 +61,9 @@ export function CreateProjectModal({ onClose, onCreated }: CreateProjectModalPro
               value={repoPath}
               onChange={(e) => setRepoPath(e.target.value)}
               placeholder="/Users/you/projects/my-app"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
+            <p className="mt-1 text-xs text-slate-500">Must be an existing git repository (<code className="bg-slate-100 px-1 rounded">git init</code> first if needed)</p>
           </div>
           <div className="flex gap-3">
             <div className="flex-1">

@@ -22,31 +22,40 @@ async def execution_stream(websocket: WebSocket, execution_id: str):
         # 1. Replay persisted logs
         logs = await execution_service.get_logs(db, execution_id)
 
+    async def safe_send(payload: dict) -> bool:
+        """Send a JSON frame; return False if client already disconnected."""
+        try:
+            await websocket.send_json(payload)
+            return True
+        except Exception:
+            return False
+
     for log in logs:
-        await websocket.send_json({
+        if not await safe_send({
             "type": "log",
             "sequence": log.sequence,
             "level": log.level,
             "content": log.content,
             "timestamp": log.timestamp,
-        })
+        }):
+            return
 
     # Send current status
-    await websocket.send_json({
-        "type": "status",
-        "status": execution.status,
-        "pid": execution.pid,
-    })
+    if not await safe_send({"type": "status", "status": execution.status, "pid": execution.pid}):
+        return
 
     # If already terminal, send done and close
     if execution.status in TERMINAL_STATUSES:
-        await websocket.send_json({
+        await safe_send({
             "type": "done",
             "status": execution.status,
             "exit_code": execution.exit_code,
             "token_usage": execution.token_usage,
         })
-        await websocket.close()
+        try:
+            await websocket.close()
+        except Exception:
+            pass
         return
 
     # 2. Subscribe to live events
@@ -56,13 +65,14 @@ async def execution_stream(websocket: WebSocket, execution_id: str):
             try:
                 event = await asyncio.wait_for(queue.get(), timeout=30.0)
             except asyncio.TimeoutError:
-                await websocket.send_json({"type": "ping"})
+                if not await safe_send({"type": "ping"}):
+                    break
                 continue
 
             if event.get("type") == "__done__":
                 async with get_db() as db:
                     execution = await execution_service.get(db, execution_id)
-                await websocket.send_json({
+                await safe_send({
                     "type": "done",
                     "status": execution.status if execution else "unknown",
                     "exit_code": execution.exit_code if execution else None,
@@ -70,7 +80,8 @@ async def execution_stream(websocket: WebSocket, execution_id: str):
                 })
                 break
 
-            await websocket.send_json(event)
+            if not await safe_send(event):
+                break
     except WebSocketDisconnect:
         pass
     finally:

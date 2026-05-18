@@ -62,6 +62,7 @@ class ClaudeCodeAdapter(AgentAdapter):
         cmd = [
             self._claude_bin,
             "--print",
+            "--verbose",                        # required by CLI ≥2.1 with stream-json
             "--output-format", "stream-json",
             "--no-session-persistence",
             "--model", self._model,
