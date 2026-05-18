@@ -67,8 +67,7 @@ export default function SettingsPage() {
     setPolicies((prev) => prev.filter((p) => p.id !== id));
   }
 
-  async function handlePolicyAdd(e: React.FormEvent) {
-    e.preventDefault();
+  async function handlePolicyAdd() {
     if (!newPattern.trim() || !newMessage.trim()) return;
     setAddingPolicy(true);
     try {
@@ -444,7 +443,7 @@ export default function SettingsPage() {
               {/* Add custom policy */}
               <details className="pt-2">
                 <summary className="text-xs text-blue-600 hover:text-blue-800 cursor-pointer select-none">+ Add custom policy</summary>
-                <form onSubmit={handlePolicyAdd} className="mt-3 space-y-2">
+                <div className="mt-3 space-y-2">
                   <div className="flex gap-2">
                     <select
                       value={newAction}
@@ -460,7 +459,6 @@ export default function SettingsPage() {
                       onChange={(e) => setNewPattern(e.target.value)}
                       placeholder="Regex pattern (e.g. rm -rf /)"
                       className="flex-1 rounded border border-slate-300 px-2 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      required
                     />
                   </div>
                   <div className="flex gap-2">
@@ -470,17 +468,17 @@ export default function SettingsPage() {
                       onChange={(e) => setNewMessage(e.target.value)}
                       placeholder="Message shown when triggered"
                       className="flex-1 rounded border border-slate-300 px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      required
                     />
                     <button
-                      type="submit"
+                      type="button"
+                      onClick={handlePolicyAdd}
                       disabled={addingPolicy}
                       className="rounded bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50"
                     >
                       {addingPolicy ? "Adding..." : "Add"}
                     </button>
                   </div>
-                </form>
+                </div>
               </details>
             </div>
           </section>
